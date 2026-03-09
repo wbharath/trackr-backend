@@ -1,7 +1,11 @@
 package com.example.jobster_backend.controller;
 
+import com.example.jobster_backend.dto.ExtractRequestDto;
+import com.example.jobster_backend.dto.ExtractResponseDto;
 import com.example.jobster_backend.dto.JobDto;
+import com.example.jobster_backend.dto.StatsResponseDto;
 import com.example.jobster_backend.entity.JobsResponseDto;
+import com.example.jobster_backend.service.AnthropicService;
 import com.example.jobster_backend.service.JobService;
 import com.example.jobster_backend.utils.JwtUtil;
 import jakarta.validation.Valid;
@@ -64,6 +68,28 @@ public class JobController {
         Long userId = getUserIdFromToken(authHeader);
         jobService.deleteJob(id, userId);
         return ResponseEntity.ok("Job deleted successfully");
+    }
+
+    @GetMapping("/stats")
+    public ResponseEntity<StatsResponseDto> getStats(
+            @RequestHeader("Authorization") String authHeader) {
+        Long userId = getUserIdFromToken(authHeader);
+        return ResponseEntity.ok(jobService.getStats(userId));
+    }
+
+    private final AnthropicService anthropicService;
+
+    @PostMapping("/extract")
+    public ResponseEntity<ExtractResponseDto> extractJob(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody ExtractRequestDto request) {
+        // Auth check — just validates token, no need to use userId
+        getUserIdFromToken(authHeader);
+        ExtractResponseDto result = anthropicService.extractJobDetails(
+                request.getPageText(),
+                request.getPageTitle()
+        );
+        return ResponseEntity.ok(result);
     }
 
 

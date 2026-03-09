@@ -1,6 +1,8 @@
 package com.example.jobster_backend.service.impl;
 
 import com.example.jobster_backend.dto.JobDto;
+import com.example.jobster_backend.dto.MonthlyApplicationDto;
+import com.example.jobster_backend.dto.StatsResponseDto;
 import com.example.jobster_backend.entity.Job;
 import com.example.jobster_backend.entity.JobsResponseDto;
 import com.example.jobster_backend.entity.User;
@@ -11,8 +13,7 @@ import com.example.jobster_backend.service.JobService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -123,6 +124,46 @@ public class JobServiceImpl implements JobService {
                 .orElseThrow(() -> new BadRequestException("Job not found or unauthorized"));
         jobRepository.delete(job);
     }
+
+    @Override
+    public StatsResponseDto getStats(Long userId) {
+
+        Map<String, Long> defaultStats = new HashMap<>();
+        defaultStats.put("pending", 0L);
+        defaultStats.put("interview", 0L);
+        defaultStats.put("declined", 0L);
+
+        List<Object[]> statusCounts = jobRepository.countByStatusForUser(userId);
+        for (Object[] row : statusCounts) {
+            String status = (String) row[0];
+            Long count = (Long) row[1];
+            defaultStats.put(status.toLowerCase(), count);
+        }
+
+        // Monthly applications — last 6 months
+        List<Object[]> monthlyCounts = jobRepository.countByMonthForUser(userId);
+        List<MonthlyApplicationDto> monthlyApplications = new ArrayList<>();
+
+        String[] monthNames = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+
+        int count = 0;
+        for (Object[] row : monthlyCounts) {
+            if (count >= 6) break;
+            int month = ((Number) row[0]).intValue();
+            int year = ((Number) row[1]).intValue();
+            long jobCount = ((Number) row[2]).longValue();
+            String date = monthNames[month - 1] + " " + String.valueOf(year).substring(2);
+            monthlyApplications.add(new MonthlyApplicationDto(date, jobCount));
+            count++;
+        }
+
+        // Reverse so oldest month is first (chart reads left to right)
+        Collections.reverse(monthlyApplications);
+
+        return new StatsResponseDto(defaultStats, monthlyApplications);
+    }
+
     private JobDto mapToDto(Job job) {
         JobDto dto = new JobDto();
         dto.setId(job.getId());

@@ -1,6 +1,7 @@
 package com.example.jobster_backend.service;
 
 import com.example.jobster_backend.dto.JobDto;
+import com.example.jobster_backend.dto.StatsResponseDto;
 import com.example.jobster_backend.entity.JobsResponseDto;
 
 import java.util.List;
@@ -11,4 +12,5 @@ public interface JobService {
                                String jobType, String sort, int page);
     JobDto updateJob(Long jobId, JobDto jobDto, Long userId);
     void deleteJob(Long jobId, Long userId);
+    StatsResponseDto getStats(Long userId);
 }
