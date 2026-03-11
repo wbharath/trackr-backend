@@ -31,7 +31,7 @@ public class JobServiceImpl implements JobService {
         job.setCompany(jobDto.getCompany());
         job.setJobLocation(jobDto.getJobLocation());
         job.setJobType(jobDto.getJobType() != null ? jobDto.getJobType() : "full-time");
-        job.setStatus(jobDto.getStatus() != null ? jobDto.getStatus() : "pending");
+        job.setStatus(jobDto.getStatus() != null ? Job.JobStatus.valueOf(jobDto.getStatus().toUpperCase()) : Job.JobStatus.APPLIED);
         job.setUser(user);
 
         Job saved = jobRepository.save(job);
@@ -59,7 +59,7 @@ public class JobServiceImpl implements JobService {
         // Filtering by status
         if (status != null && !status.equals("all")) {
             allJobs = allJobs.stream()
-                    .filter(j -> j.getStatus().equalsIgnoreCase(status))
+                    .filter(j -> j.getStatus().name().equalsIgnoreCase(status))
                     .collect(Collectors.toList());
         }
 
@@ -113,7 +113,7 @@ public class JobServiceImpl implements JobService {
         job.setCompany(jobDto.getCompany());
         job.setJobLocation(jobDto.getJobLocation());
         job.setJobType(jobDto.getJobType());
-        job.setStatus(jobDto.getStatus());
+        job.setStatus(Job.JobStatus.valueOf(jobDto.getStatus().toUpperCase()));
 
         return mapToDto(jobRepository.save(job));
     }
@@ -135,7 +135,7 @@ public class JobServiceImpl implements JobService {
 
         List<Object[]> statusCounts = jobRepository.countByStatusForUser(userId);
         for (Object[] row : statusCounts) {
-            String status = (String) row[0];
+            String status = ((Job.JobStatus) row[0]).name();
             Long count = (Long) row[1];
             defaultStats.put(status.toLowerCase(), count);
         }
@@ -171,7 +171,7 @@ public class JobServiceImpl implements JobService {
         dto.setCompany(job.getCompany());
         dto.setJobLocation(job.getJobLocation());
         dto.setJobType(job.getJobType());
-        dto.setStatus(job.getStatus());
+        dto.setStatus(job.getStatus().name());
         return dto;
     }
 }

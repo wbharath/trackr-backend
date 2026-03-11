@@ -1,13 +1,13 @@
 package com.example.jobster_backend.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class User {
 
     @Id
@@ -28,6 +29,21 @@ public class User {
 
     @Column(nullable = false)
     private String password;
+
+
+//    Gmail address connected via OAuth (differ from login as well)
+    @Column(name = "gmail_email")
+    private String gmailEmail;
+
+//    Timestamp of the very first Gmail sync for this user.
+    @Column(name = "email_sync_start_date")
+    private LocalDateTime emailSyncStartDate;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @Builder.Default
+    private List<Job> jobs = new ArrayList<>();
+
 
     @CreationTimestamp
     @Column(updatable = false)
