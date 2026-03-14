@@ -79,18 +79,25 @@ public class GmailSyncService {
 
             for (ClaudeResult result : results) {
                 if (result.isJobRelated()) {
-                    Job job = Job.builder()
-                            .user(user)
-                            .company(result.getCompany() != null ? result.getCompany() : "Unknown")
-                            .position(result.getPosition() != null ? result.getPosition() : "Unknown")
-                            .jobLocation(result.getJobLocation() != null ? result.getJobLocation() : "Not specified")
-                            .jobType("full-time")   // ← add this
-                            .status(result.getStatus() != null ? result.getStatus() : Job.JobStatus.APPLIED)
-                            .gmailMessageId(result.getMessageId())
-                            .emailSubject(result.getSubject())
-                            .emailPreview(result.getPreview())
-                            .emailDate(result.getEmailDate())
-                            .build();
+                    try {
+                        Job job = Job.builder()
+                                .user(user)
+                                .company(result.getCompany() != null ? result.getCompany() : "Unknown")
+                                .position(result.getPosition() != null ? result.getPosition() : "Unknown")
+                                .jobLocation(result.getJobLocation() != null ? result.getJobLocation() : "Not specified")
+                                .jobType("full-time")
+                                .status(result.getStatus() != null ? result.getStatus() : Job.JobStatus.APPLIED)
+                                .gmailMessageId(result.getMessageId())
+                                .emailSubject(result.getSubject())
+                                .emailPreview(result.getPreview())
+                                .emailDate(result.getEmailDate())
+                                .build();
+                        jobRepository.save(job);   // ← THIS was missing
+                        categorized++;
+                        log.info("Saved: {} at {}", job.getPosition(), job.getCompany());
+                    } catch (Exception e) {
+                        log.error("Save failed: {}", e.getMessage());
+                    }
                 }
             }
         }

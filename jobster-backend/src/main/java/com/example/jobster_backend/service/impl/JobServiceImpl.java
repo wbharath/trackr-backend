@@ -129,18 +129,19 @@ public class JobServiceImpl implements JobService {
     public StatsResponseDto getStats(Long userId) {
 
         Map<String, Long> defaultStats = new HashMap<>();
-        defaultStats.put("pending", 0L);
-        defaultStats.put("interview", 0L);
-        defaultStats.put("declined", 0L);
+        defaultStats.put("APPLIED", 0L);
+        defaultStats.put("INTERVIEW", 0L);
+        defaultStats.put("REJECTED", 0L);
+        defaultStats.put("OFFER", 0L);
 
         List<Object[]> statusCounts = jobRepository.countByStatusForUser(userId);
         for (Object[] row : statusCounts) {
             String status = ((Job.JobStatus) row[0]).name();
             Long count = (Long) row[1];
-            defaultStats.put(status.toLowerCase(), count);
+            defaultStats.put(status, count);
         }
 
-        // Monthly applications — last 6 months
+        // Monthly applications
         List<Object[]> monthlyCounts = jobRepository.countByMonthForUser(userId);
         List<MonthlyApplicationDto> monthlyApplications = new ArrayList<>();
 
@@ -158,7 +159,6 @@ public class JobServiceImpl implements JobService {
             count++;
         }
 
-        // Reverse so oldest month is first (chart reads left to right)
         Collections.reverse(monthlyApplications);
 
         return new StatsResponseDto(defaultStats, monthlyApplications);
@@ -172,6 +172,8 @@ public class JobServiceImpl implements JobService {
         dto.setJobLocation(job.getJobLocation());
         dto.setJobType(job.getJobType());
         dto.setStatus(job.getStatus().name());
+        dto.setEmailDate(job.getEmailDate());
+        dto.setCreatedAt(job.getCreatedAt());
         return dto;
     }
 }
