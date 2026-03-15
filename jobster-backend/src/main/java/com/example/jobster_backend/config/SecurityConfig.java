@@ -54,7 +54,9 @@ public class SecurityConfig {
         configuration.setAllowedOriginPatterns(Arrays.asList(
                 "http://localhost:5173",
                 "http://localhost:3000",
-                "chrome-extension://*"
+                "chrome-extension://*",
+                "https://*.vercel.app",
+                "https://trackr-frontend-2mzpmjin0-wbharaths-projects.vercel.app"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
